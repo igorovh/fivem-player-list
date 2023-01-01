@@ -1,5 +1,8 @@
 const STEAM_LINK = 'https://steamcommunity.com/profiles/%decId%';
 
+let refreshTime = 31;
+let refreshInterval;
+
 window.onload = () => {
 	const lastId = localStorage.getItem('lastId');
 	if (!lastId) return;
@@ -11,8 +14,6 @@ window.onload = () => {
 const handleInput = () => {
 	const value = document.querySelector('#input-id').value;
 	if (!value) return;
-
-	updateInfo(value);
 };
 
 const updateInfo = (serverId) => {
@@ -60,12 +61,12 @@ const updateInfo = (serverId) => {
 				}
 
 				table.appendChild(tr);
+
+				updateRefresh(serverId);
 			});
 		})
 		.catch((error) => console.error(error));
 };
-
-//        const data = await fetch('https://servers-frontend.fivem.net/api/servers/single/vp4rxq');
 
 const resetTable = () => {
 	[...document.querySelector('table').querySelectorAll('tr')]
@@ -91,4 +92,15 @@ const hexToDecimal = (s) => {
 		}
 	}
 	return digits.reverse().join('');
+};
+
+const updateRefresh = (serverId) => {
+	if (refreshInterval) clearInterval(refreshInterval);
+	refreshInterval = setInterval(() => {
+		if (--refreshTime < 1) {
+			refreshTime = 31;
+			updateInfo(serverId);
+		}
+		document.querySelector('#refresh-time').textContent = `Refreshing data in ${refreshTime}s...`;
+	}, 1000);
 };
