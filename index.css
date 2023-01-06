@@ -40,3 +40,12 @@ td {
 table {
     min-width: 512px;
 }
+
+.star:hover {
+    opacity: 0.75;
+    cursor: pointer;
+}
+
+.star:active {
+    opacity: 0.5;
+}
