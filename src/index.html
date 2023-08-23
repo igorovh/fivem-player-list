@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Waiting for Server ID...</title>
+		<link rel="stylesheet" href="css/index.css" />
+		<link id="favicon" rel="shortcut icon" href="https://fivem.net/favicon.png" type="image/x-icon" />
+		<script src="js/index.js" type="module"></script>
+	</head>
+	<body>
+		<div id="wrapper">
+			<header>
+				<div id="title">
+					<img id="server-icon" src="https://fivem.net/favicon.png" alt="Server Icon" />
+					<span id="server-name">Waiting for Server ID... </span>
+					<span id="server-players" title="Players Online" class="players"></span>
+				</div>
+				<div id="server">
+					<input type="text" id="server-id" placeholder="Server ID" />
+					<div id="server-id-button" class="icon">
+						<img src="img/search.svg" alt="Search" />
+					</div>
+					<div class="icon" title="How to get Server ID?">
+						<a href="#" style="display: flex; justify-content: center; align-items: center">
+							<img src="img/question-mark.svg" alt="Search" />
+						</a>
+					</div>
+				</div>
+			</header>
+			<section>
+				<input type="text" id="search" placeholder="Search player..." />
+				<div id="refresh-button" class="icon refresh-icon" title="How to get Server ID?">
+					<img src="img/refresh.svg" alt="Search" />
+					<span id="refresh-timer">30s</span>
+				</div>
+			</section>
+			<table>
+				<tr id="table-header" style="background: #171717">
+					<th class="table-favorite" style="color: #313131" title="Not working right now">Favorite</th>
+					<th class="table-id">Id</th>
+					<th class="table-name">Name</th>
+					<th class="table-socials">Socials</th>
+					<th class="table-ping">Ping</th>
+				</tr>
+			</table>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,187 @@
+@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@400;700&display=swap');
+
+body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #232323;
+    display: flex;
+    justify-content: center;
+    color: white;
+}
+
+#wrapper {
+    width: 75%;
+    font-family: 'Mulish', sans-serif;
+    background: #2C2C2C;
+    height: min(100vh, max-content);
+    position: relative;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    background: #171717;
+}
+
+#title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    font-size: 24px;
+    flex-grow: 1;
+}
+
+header img {
+    width: 64px;
+}
+
+input {
+    width: 168px;
+    height: 36px;
+    background: #232323;
+    border: 0px;
+    text-align: center;
+    font-size: 16px;
+    outline: 0px;
+    color: white;
+    font-family: 'Mulish', sans-serif;
+    padding: 4px 12px;
+}
+
+#server {
+    display: flex;
+    padding: 24px;
+}
+
+.icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    background: #1E1E1E;
+    gap: 12px;
+}
+
+.icon img {
+    width: 22px;
+}
+
+.icon:hover {
+    background: #252525;
+    cursor: pointer;
+}
+
+.icon:active {
+    background: #2e2e2e;
+}
+
+section {
+    background: #171717;
+    display: flex;
+    gap: 16px;
+    padding: 0 24px 24px 24px;
+}
+
+#search {
+    text-align: left;
+    flex-grow: 1;
+}
+
+.refresh-icon {
+    width: 64px;
+    text-align: right;
+}
+
+table {
+    font-size: 16px;
+    border-spacing: 0;
+    width: 100%;
+}
+
+th {
+    width: 100%;
+    text-align: left;
+}
+
+tr {
+    display: flex;
+    padding: 16px 96px;
+    justify-content: space-between;
+}
+
+table tr:nth-child(odd) {
+    background: #262626;
+}
+
+.table-favorite {
+    width: 20%;
+}
+
+.table-favorite img:hover {
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.table-favorite img:active {
+    opacity: 0.25;
+}
+
+.table-id {
+    width: 15%;
+}
+
+.table-name {
+    width: 40%;
+    word-break: break-all;
+}
+
+.table-socials {
+    width: 15%;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.table-ping {
+    width: 15%;
+}
+
+.table-socials img:hover {
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.table-socials img:active {
+    opacity: 0.25;
+}
+
+@media (max-width: 1200px) {
+    #wrapper {
+        width: 100%;
+    }
+
+    header {
+        gap: 12px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    #title {
+        padding: 24px 24px 0 24px;
+    }
+
+    #server {
+        padding: 0 24px 24px 24px;
+    }
+
+    tr {
+        padding: 16px 16px;
+    }
+}
+
+a {
+    text-decoration: none;
+}
