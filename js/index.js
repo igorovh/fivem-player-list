@@ -5,6 +5,12 @@ import { initializeSearch } from './serach.js';
 // Pixa vqkdxx
 
 window.addEventListener('DOMContentLoaded', () => {
+	// Old ID Fix
+	if (localStorage.has('lastId')) {
+		localStorage.setItem('serverId', localStorage.getItem('lastId'));
+		localStorage.removeItem('lastId');
+	}
+
 	initializeSearch(); // Player Search
 
 	// Server Id Serach
