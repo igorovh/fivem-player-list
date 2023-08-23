@@ -6,7 +6,7 @@ import { initializeSearch } from './serach.js';
 
 window.addEventListener('DOMContentLoaded', () => {
 	// Old ID Fix
-	if (localStorage.hasItem('lastId')) {
+	if (localStorage.getItem('lastId')) {
 		localStorage.setItem('serverId', localStorage.getItem('lastId'));
 		localStorage.removeItem('lastId');
 	}
