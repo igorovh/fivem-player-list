@@ -1,6 +1,7 @@
 import { getPlayers, renderPlayers } from './fetch.js';
 
 let search;
+let searching = false;
 
 export const initializeSearch = () => {
 	search = document.querySelector('#search');
@@ -10,10 +11,16 @@ export const initializeSearch = () => {
 export const serachPlayers = () => {
 	const value = search.value;
 	let players = getPlayers();
-	if (value.length < 1) return renderPlayers(players);
+	if (value.length < 1) {
+		searching = false;
+		return renderPlayers(players, true);
+	}
 
+	searching = true;
 	players = players.filter(
-		(player) => player.id.toString().startsWith(value) || player.name.toLowerCase().startsWith(value.toLowerCase())
+		(player) => player.id.toString().startsWith(value) || player.name.toLowerCase().includes(value.toLowerCase())
 	);
-	renderPlayers(players);
+	renderPlayers(players, true);
 };
+
+export const isSearching = () => searching;

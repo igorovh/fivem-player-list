@@ -112,6 +112,10 @@ tr {
     justify-content: space-between;
 }
 
+td {
+    font-weight: 400;
+}
+
 table tr:nth-child(odd) {
     background: #262626;
 }
@@ -156,6 +160,17 @@ table tr:nth-child(odd) {
 
 .table-socials img:active {
     opacity: 0.25;
+}
+
+.table-footer {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+.table-footer a {
+    text-decoration: underline;
+    color: white;
 }
 
 @media (max-width: 1200px) {
