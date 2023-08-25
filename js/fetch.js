@@ -1,4 +1,4 @@
-import { setServerInfo } from './server.js';
+import { setServerInfo, setTitle } from './server.js';
 import { getDiscordId, getSteamId } from './utils/user.js';
 import { isSearching, serachPlayers } from './serach.js';
 
@@ -9,6 +9,7 @@ let currentPlayers;
 export const getPlayers = () => currentPlayers;
 
 export const fetchServer = (serverId) => {
+	setTitle('Loading server data from FiveM API...');
 	seconds = 30;
 	refreshButton.onclick = () => fetchServer(serverId);
 	const url = `https://servers-frontend.fivem.net/api/servers/single/${serverId}`;
@@ -105,22 +106,26 @@ export const renderPlayers = (players, search = false) => {
 	resetTable();
 
 	console.info('Rendering new players', players.length);
+	let index = 1;
 	players.forEach((player) => {
 		const tr = document.createElement('tr');
 
-		const star = document.createElement('td');
+		const no = document.createElement('td');
+		// const star = document.createElement('td');
 		const id = document.createElement('td');
 		const name = document.createElement('td');
 		const socials = document.createElement('td');
 		const ping = document.createElement('td');
 
-		star.className = 'table-favorite';
+		no.className = 'table-no';
+		// star.className = 'table-favorite';
 		id.className = 'table-id';
 		name.className = 'table-name';
 		socials.className = 'table-socials';
 		ping.className = 'table-ping';
 
-		star.innerHTML = `<img src="img/empty-star.svg" alt="Add to Favorites" title="Add to Favorites">`;
+		no.textContent = index++ + '.';
+		// star.innerHTML = `<img src="img/empty-star.svg" alt="Add to Favorites" title="Add to Favorites">`;
 		id.textContent = player.id;
 		name.textContent = player.name;
 		ping.textContent = `${player.ping}ms`;
@@ -140,7 +145,8 @@ export const renderPlayers = (players, search = false) => {
 			socials.appendChild(link);
 		}
 
-		tr.appendChild(star);
+		tr.appendChild(no);
+		// tr.appendChild(star);
 		tr.appendChild(id);
 		tr.appendChild(name);
 		tr.appendChild(socials);

@@ -12,8 +12,12 @@ export const setServerInfo = (serverId, data) => {
 	const icon = `https://servers-live.fivem.net/servers/icon/${serverId}/${data.iconVersion}.png`;
 	document.title = title;
 	favicon.href = icon;
-	serverName.textContent = title;
-	serverName.title = title;
+	setTitle(title);
 	serverIcon.src = icon;
 	serverPlayers.textContent = `[${data.clients}/${data.svMaxclients ?? data.sv_maxclients ?? 0}]`;
+};
+
+export const setTitle = (title) => {
+	serverName.textContent = title;
+	serverName.title = title;
 };

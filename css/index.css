@@ -133,6 +133,11 @@ table tr:nth-child(odd) {
     opacity: 0.25;
 }
 
+.table-no {
+    width: 15%;
+    color: #939393;
+}
+
 .table-id {
     width: 15%;
 }
