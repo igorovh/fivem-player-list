@@ -1,20 +1,50 @@
 @import url('https://fonts.googleapis.com/css2?family=Mulish:wght@400;700&display=swap');
 
+:root {
+    --bg-color: #232323;
+    --wrapper-bg: #2C2C2C;
+    --header-bg: #171717;
+    --input-bg: #232323;
+    --icon-bg: #1E1E1E;
+    --icon-hover: #252525;
+    --icon-active: #2e2e2e;
+    --table-odd: #262626;
+    --text-color: white;
+    --text-secondary: #939393;
+    --border-color: #3a3a3a;
+}
+
+.light-theme {
+    --bg-color: #f0f0f0;
+    --wrapper-bg: #ffffff;
+    --header-bg: #e0e0e0;
+    --input-bg: #f5f5f5;
+    --icon-bg: #e0e0e0;
+    --icon-hover: #d0d0d0;
+    --icon-active: #c0c0c0;
+    --table-odd: #f5f5f5;
+    --text-color: #333333;
+    --text-secondary: #666666;
+    --border-color: #dddddd;
+}
+
 body {
     margin: 0 !important;
     padding: 0 !important;
-    background: #232323;
+    background: var(--bg-color);
     display: flex;
     justify-content: center;
-    color: white;
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+    font-family: 'Mulish', sans-serif;
 }
 
 #wrapper {
     width: 75%;
-    font-family: 'Mulish', sans-serif;
-    background: #2C2C2C;
-    height: min(100vh, max-content);
+    background: var(--wrapper-bg);
+    min-height: 100vh;
     position: relative;
+    transition: background-color 0.3s;
 }
 
 header {
@@ -22,7 +52,8 @@ header {
     align-items: center;
     gap: 8px;
     font-weight: bold;
-    background: #171717;
+    background: var(--header-bg);
+    transition: background-color 0.3s;
 }
 
 #title {
@@ -41,18 +72,21 @@ header img {
 input {
     width: 168px;
     height: 36px;
-    background: #232323;
+    background: var(--input-bg);
     border: 0px;
+    border-radius: 10px;
     text-align: center;
     font-size: 16px;
     outline: 0px;
-    color: white;
+    color: var(--text-color);
     font-family: 'Mulish', sans-serif;
     padding: 4px 12px;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 #server {
     display: flex;
+    gap: 1rem;
     padding: 24px;
 }
 
@@ -61,8 +95,10 @@ input {
     align-items: center;
     justify-content: center;
     padding: 0 16px;
-    background: #1E1E1E;
+    background: var(--icon-bg);
     gap: 12px;
+    transition: background-color 0.3s;
+    border-radius: 4px;
 }
 
 .icon img {
@@ -70,19 +106,28 @@ input {
 }
 
 .icon:hover {
-    background: #252525;
+    background: var(--icon-hover);
     cursor: pointer;
 }
 
 .icon:active {
-    background: #2e2e2e;
+    background: var(--icon-active);
 }
 
 section {
-    background: #171717;
+    background: var(--header-bg);
     display: flex;
     gap: 16px;
     padding: 0 24px 24px 24px;
+    flex-wrap: wrap;
+    transition: background-color 0.3s;
+}
+
+.controls-wrapper {
+    display: flex;
+    gap: 16px;
+    flex-grow: 1;
+    align-items: center;
 }
 
 #search {
@@ -91,14 +136,22 @@ section {
 }
 
 .refresh-icon {
+    height: 100%;
     width: 64px;
     text-align: right;
+    position: relative;
+}
+
+.utility-icons {
+    display: flex;
+    gap: 8px;
 }
 
 table {
     font-size: 16px;
     border-spacing: 0;
     width: 100%;
+    border-radius: 4px;
 }
 
 th {
@@ -117,7 +170,7 @@ td {
 }
 
 table tr:nth-child(odd) {
-    background: #262626;
+    background: var(--table-odd);
 }
 
 .table-favorite {
@@ -135,7 +188,7 @@ table tr:nth-child(odd) {
 
 .table-no {
     width: 15%;
-    color: #939393;
+    color: var(--text-secondary);
 }
 
 .table-id {
@@ -175,9 +228,185 @@ table tr:nth-child(odd) {
 
 .table-footer a {
     text-decoration: underline;
-    color: white;
+    color: var(--text-color);
 }
 
+/* Loading animation */
+.loader {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+}
+
+.loader-spinner {
+    border: 5px solid var(--icon-bg);
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Favorites dropdown */
+#favorites-button {
+    position: relative;
+}
+
+#favorites-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 100;
+    background: var(--wrapper-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    min-width: 250px;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+    border-radius: 4px;
+    padding: 8px 0;
+}
+
+#favorites-menu.show {
+    display: block;
+}
+
+.favorites-section {
+    padding: 8px;
+}
+
+.favorites-section h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    color: var(--text-color);
+    padding: 0 8px;
+}
+
+.favorites-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.favorites-section li {
+    margin-bottom: 4px;
+    width: 100%;
+}
+
+.favorite-item {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    padding: 8px 12px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-family: 'Mulish', sans-serif;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+.favorite-item:hover {
+    background: var(--icon-hover);
+}
+
+.favorite-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.server-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.favorite-player {
+    padding: 4px 8px;
+    display: block;
+}
+
+.no-favorites {
+    padding: 16px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* Notification System */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.notification {
+    background: var(--header-bg);
+    color: var(--text-color);
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 300px;
+    max-width: 400px;
+}
+
+.notification.success {
+    border-left: 4px solid #4CAF50;
+}
+
+.notification.error {
+    border-left: 4px solid #F44336;
+}
+
+.notification.info {
+    border-left: 4px solid #2196F3;
+}
+
+.notification.warning {
+    border-left: 4px solid #FF9800;
+}
+
+.close-notification {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    margin-left: 10px;
+    opacity: 0.5;
+}
+
+.close-notification:hover {
+    opacity: 1;
+}
+
+/* Responsive Styles */
 @media (max-width: 1200px) {
     #wrapper {
         width: 100%;
@@ -198,10 +427,104 @@ table tr:nth-child(odd) {
     }
 
     tr {
-        padding: 16px 16px;
+        padding: 16px;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        width: 100%;
+        border-radius: 4px;
+    }
+
+    table {
+        min-width: 800px;
+        /* Ensure table is still readable on small screens */
+    }
+}
+
+@media (max-width: 600px) {
+    #title {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    section {
+        flex-direction: column;
+    }
+
+    .controls-wrapper {
+        width: 100%;
+    }
+
+    #search {
+        width: calc(100% - 24px);
+        /* Account for padding */
+    }
+
+    .utility-icons {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .icon {
+        flex: 1;
     }
 }
 
 a {
     text-decoration: none;
+}
+
+/* Server history list */
+#history-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--wrapper-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    min-width: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+    border-radius: 4px;
+    padding: 8px 0;
+}
+
+#history-menu.show {
+    display: block;
+}
+
+/* Tabs for statistics */
+.tabs {
+    display: flex;
+    margin: 0 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab {
+    padding: 12px 24px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+    border-bottom: 2px solid #3498db;
+    font-weight: bold;
+}
+
+.tab-content {
+    padding: 24px;
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.chart-container {
+    width: 100%;
+    height: 300px;
+    margin-bottom: 24px;
 }

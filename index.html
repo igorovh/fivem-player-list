@@ -9,6 +9,14 @@
 		<script src="js/index.js" type="module"></script>
 	</head>
 	<body>
+		<!-- Loader -->
+		<div id="loader" class="loader">
+			<div class="loader-spinner"></div>
+		</div>
+		
+		<!-- Notification container -->
+		<div id="notification-container" class="notification-container"></div>
+		
 		<div id="wrapper">
 			<header>
 				<div id="title">
@@ -32,28 +40,87 @@
 				</div>
 			</header>
 			<section>
-				<input type="text" id="search" placeholder="Search player..." />
-				<div id="refresh-button" class="icon refresh-icon" title="Refresh players">
-					<img src="img/refresh.svg" alt="Search" />
-					<span id="refresh-timer">30s</span>
+				<div class="controls-wrapper">
+					<input type="text" id="search" placeholder="Search player..." />
+					<div id="refresh-button" class="icon refresh-icon" title="Refresh players">
+						<img src="img/refresh.svg" alt="Refresh" />
+						<span id="refresh-timer">30s</span>
+					</div>
+				</div>
+				<div class="utility-icons">
+					<div id="favorites-button" class="icon" title="Favorites">
+						<img src="img/star.svg" alt="Favorites">
+						<div id="favorites-menu"></div>
+					</div>
+					<div id="history-button" class="icon" title="History">
+						<img src="img/history.svg" alt="History">
+						<div id="history-menu"></div>
+					</div>
+					<div id="theme-toggle" class="icon" title="Toggle Theme">
+						<img src="img/moon.svg" alt="Toggle Theme">
+					</div>
 				</div>
 			</section>
-			<table>
-				<tr id="table-header" style="background: #171717">
-                    <th class="table-id">No.</th>
-					<!-- <th class="table-favorite" style="color: #313131" title="Not working right now">Favorite</th> -->
-					<th class="table-id">Id</th>
-					<th class="table-name">Name</th>
-					<th class="table-socials">Socials</th>
-					<th class="table-ping">Ping</th>
-				</tr>
-				<tr class="table-footer" style="background: #171717">
-					<td rowspan="5">
-                        <span>This page is not affiliated with FiveM or any other server.</span><br />
-                        <span>Created by <a href="https://github.com/igorovh" target="_blank">igorovh</a>.</span>
-                    </th>
-				</tr>
-			</table>
+			
+			<!-- Tabs for Player List and Statistics -->
+			<div class="tabs">
+				<div class="tab active" data-tab="players">Players</div>
+				<div class="tab" data-tab="favorites">Favorites</div>
+				<div class="tab" data-tab="statistics">Statistics</div>
+			</div>
+			
+			<div id="players-tab" class="tab-content active">
+				<div class="table-container">
+					<table>
+						<tr id="table-header" style="background: var(--header-bg)">
+							<th class="table-no">No.</th>
+							<th class="table-favorite">Favorite</th>
+							<th class="table-id">Id</th>
+							<th class="table-name">Name</th>
+							<th class="table-socials">Socials</th>
+							<th class="table-ping">Ping</th>
+						</tr>
+						<tr class="table-footer" style="background: var(--header-bg)">
+							<td rowspan="5">
+								<span>This page is not affiliated with FiveM or any other server.</span><br />
+								<span>Created by <a href="https://github.com/igorovh" target="_blank">igorovh</a>.</span>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			
+			<div id="favorites-tab" class="tab-content">
+				<div class="table-container">
+					<table id="favorites-table">
+						<tr id="favorites-table-header" style="background: var(--header-bg)">
+							<th class="table-no">No.</th>
+							<th class="table-favorite">Favorite</th>
+							<th class="table-id">Id</th>
+							<th class="table-name">Name</th>
+							<th class="table-socials">Socials</th>
+							<th class="table-ping">Ping</th>
+						</tr>
+						<tr class="table-footer" style="background: var(--header-bg)">
+							<td rowspan="5">
+								<span>No favorite players yet. Click on the star icon next to a player to add them to favorites.</span>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			
+			<div id="statistics-tab" class="tab-content">
+				<div class="chart-container">
+					<canvas id="player-chart"></canvas>
+				</div>
+				<div class="chart-container">
+					<canvas id="ping-chart"></canvas>
+				</div>
+			</div>
 		</div>
+		
+		<!-- Add Chart.js library for statistics -->
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	</body>
 </html>

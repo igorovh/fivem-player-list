@@ -1,41 +1,58 @@
 import { setServerInfo, setTitle } from './server.js';
 import { getDiscordId, getSteamId } from './utils/user.js';
-import { isSearching, serachPlayers } from './serach.js';
+import { isSearching, searchPlayers, checkPendingSearch } from './search.js';
+import { API_BASE_URL, DEFAULT_HEADERS } from './utils/constants.js';
+import { updateActivePlayers, isPlayerFavorite } from './favorites.js';
 
 const refreshButton = document.querySelector('#refresh-button');
+const loader = document.querySelector('#loader');
+const table = document.querySelector('table');
+const refreshTimer = document.querySelector('#refresh-timer');
 
 let currentPlayers;
+let fetcher;
+let seconds = 30;
 
 export const getPlayers = () => currentPlayers;
 
 export const fetchServer = (serverId) => {
-	setTitle('Loading server data from FiveM API...');
-	seconds = 30;
-	refreshButton.onclick = () => fetchServer(serverId);
-	const url = `https://servers-frontend.fivem.net/api/servers/single/${serverId}`;
-	console.info(`Fetching server info`, serverId, url);
-	fetch(url, {
-		headers: {
-			Accept: '*/*',
-			'Content-Type': 'application/json',
-			'User-Agent':
-				'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
-		},
-	})
-		.then((response) => response.json())
-		.then((json) => {
-			setServerInfo(serverId, json.Data);
-			let playersFetch = false; //Todo
-			let url = `https://servers-frontend.fivem.net/api/servers/single/${serverId}`;
-			fetchPlayers(url, playersFetch);
-			startFetcher(serverId);
-		})
-		.catch((error) => console.error(error));
+	try {
+		if (!isValidServerId(serverId)) {
+			showNotification('Invalid server ID format', 'error');
+			return;
+		}
+		
+		setTitle('Loading server data from FiveM API...');
+		seconds = 30;
+		
+		showLoader(true);
+		
+		refreshButton.onclick = () => fetchServer(serverId);
+		const url = `${API_BASE_URL}/servers/single/${serverId}`;
+		console.info(`Fetching server info`, serverId, url);
+		
+		fetch(url, { headers: DEFAULT_HEADERS })
+			.then(handleResponse)
+			.then((json) => {
+				setServerInfo(serverId, json.Data);
+				let playersFetch = false; //Todo
+				let url = `${API_BASE_URL}/servers/single/${serverId}`;
+				fetchPlayers(url, playersFetch);
+				startFetcher(serverId);
+				showNotification('Server data loaded successfully', 'success');
+			})
+			.catch((error) => {
+				console.error(error);
+				setTitle('Error loading server data');
+				showNotification('Failed to load server data', 'error');
+				showLoader(false);
+			});
+	} catch (error) {
+		console.error('Error in fetchServer:', error);
+		showNotification('An unexpected error occurred', 'error');
+		showLoader(false);
+	}
 };
-
-const refreshTimer = document.querySelector('#refresh-timer');
-let fetcher;
-let seconds = 30;
 
 const startFetcher = (serverId) => {
 	console.log(`Starting fetcher at ${seconds} seconds`);
@@ -52,22 +69,34 @@ const startFetcher = (serverId) => {
 
 const fetchPlayers = (url, playersFetch = false) => {
 	console.info('Fetching players with method:', playersFetch ? 'players.json' : 'normal', url);
-	fetch(url, {
-		headers: {
-			Accept: '*/*',
-			'Content-Type': 'application/json',
-			'User-Agent':
-				'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
-		},
-	})
-		.then((response) => response.json())
+	fetch(url, { headers: DEFAULT_HEADERS })
+		.then(handleResponse)
 		.then((json) => {
 			let players = playersFetch ? json : json.Data.players;
 			players = formatPlayers(players);
-			currentPlayers = players;
-			renderPlayers(players);
+			
+			// Only update if players changed
+			if (!arraysEqual(currentPlayers, players)) {
+				currentPlayers = players;
+				renderPlayers(players);
+				updateActivePlayers(players);
+				checkPendingSearch();
+			}
+			
+			showLoader(false);
 		})
-		.catch((error) => console.error(error));
+		.catch((error) => {
+			console.error(error);
+			showNotification('Failed to load player data', 'error');
+			showLoader(false);
+		});
+};
+
+const handleResponse = (response) => {
+	if (!response.ok) {
+		throw new Error(`HTTP error! Status: ${response.status}`);
+	}
+	return response.json();
 };
 
 const formatPlayers = (players) => {
@@ -93,8 +122,6 @@ const formatPlayers = (players) => {
 	return formattedPlayers.sort((a, b) => a.id - b.id);
 };
 
-const table = document.querySelector('table');
-
 const resetTable = () => {
 	[...table.querySelectorAll('tr')].filter((tr) => tr.id !== 'table-header').forEach((tr) => tr.remove());
 };
@@ -111,21 +138,22 @@ export const renderPlayers = (players, search = false) => {
 		const tr = document.createElement('tr');
 
 		const no = document.createElement('td');
-		// const star = document.createElement('td');
+		const star = document.createElement('td');
 		const id = document.createElement('td');
 		const name = document.createElement('td');
 		const socials = document.createElement('td');
 		const ping = document.createElement('td');
 
 		no.className = 'table-no';
-		// star.className = 'table-favorite';
+		star.className = 'table-favorite';
 		id.className = 'table-id';
 		name.className = 'table-name';
 		socials.className = 'table-socials';
 		ping.className = 'table-ping';
 
 		no.textContent = index++ + '.';
-		// star.innerHTML = `<img src="img/empty-star.svg" alt="Add to Favorites" title="Add to Favorites">`;
+		const isFavorite = isPlayerFavorite(player.id.toString());
+		star.innerHTML = `<img src="${isFavorite ? 'img/star.svg' : 'img/empty-star.svg'}" alt="${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}" title="${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}">`;
 		id.textContent = player.id;
 		name.textContent = player.name;
 		ping.textContent = `${player.ping}ms`;
@@ -146,7 +174,7 @@ export const renderPlayers = (players, search = false) => {
 		}
 
 		tr.appendChild(no);
-		// tr.appendChild(star);
+		tr.appendChild(star);
 		tr.appendChild(id);
 		tr.appendChild(name);
 		tr.appendChild(socials);
@@ -162,5 +190,37 @@ export const renderPlayers = (players, search = false) => {
                 <span>Created by <a href="https://github.com/igorovh" target="_blank">igorovh</a>.</span>
             </th>
         </tr>`;
-	if (isSearching() && !search) serachPlayers();
+	if (isSearching() && !search) searchPlayers();
+};
+
+const isValidServerId = (serverId) => {
+	return typeof serverId === 'string' && /^[a-zA-Z0-9]+$/.test(serverId);
+};
+
+const arraysEqual = (a, b) => {
+	if (!a || !b) return false;
+	if (a.length !== b.length) return false;
+	
+	// Simple comparison of player IDs and names
+	const aIds = a.map(p => `${p.id}-${p.name}-${p.ping}`).sort();
+	const bIds = b.map(p => `${p.id}-${p.name}-${p.ping}`).sort();
+	
+	return JSON.stringify(aIds) === JSON.stringify(bIds);
+};
+
+const showLoader = (isVisible) => {
+	if (loader) {
+		loader.style.display = isVisible ? 'flex' : 'none';
+	}
+};
+
+// Notification system
+const showNotification = (message, type) => {
+	if (window.createNotification) {
+		window.createNotification({
+			message,
+			type,
+			duration: 3000
+		});
+	}
 };
