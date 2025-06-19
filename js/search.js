@@ -1,4 +1,5 @@
 import { getPlayers, renderPlayers } from './fetch.js';
+import { getPlayerKey } from './favorites.js'; //
 
 let search;
 let searching = false;
@@ -19,13 +20,13 @@ export const initializeSearch = () => {
 export const searchPlayers = () => {
 	const value = search.value;
 	updateSearchParam(value);
-	
+
 	let players = getPlayers();
     // protect
 	if (!players) {
 		return;
 	}
-	
+
 	if (value.length < 1) {
 		searching = false;
 		return renderPlayers(players, true);
@@ -33,7 +34,10 @@ export const searchPlayers = () => {
 
 	searching = true;
 	players = players.filter(
-		(player) => player.id.toString().startsWith(value) || player.name.toLowerCase().includes(value.toLowerCase())
+		(player) =>
+			player.id.toString().startsWith(value) ||
+			player.name.toLowerCase().includes(value.toLowerCase()) ||
+			getPlayerKey(player).toLowerCase().includes(value.toLowerCase())
 	);
 	renderPlayers(players, true);
 };

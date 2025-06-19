@@ -3,6 +3,7 @@ import { getDiscordId, getSteamId } from './utils/user.js';
 import { isSearching, searchPlayers, checkPendingSearch } from './search.js';
 import { API_BASE_URL, DEFAULT_HEADERS } from './utils/constants.js';
 import { updateActivePlayers, isPlayerFavorite } from './favorites.js';
+import { getPlayerKey } from './favorites.js'; // Ajouté pour générer la clé stable
 
 const refreshButton = document.querySelector('#refresh-button');
 const loader = document.querySelector('#loader');
@@ -21,16 +22,16 @@ export const fetchServer = (serverId) => {
 			showNotification('Invalid server ID format', 'error');
 			return;
 		}
-		
+
 		setTitle('Loading server data from FiveM API...');
 		seconds = 30;
-		
+
 		showLoader(true);
-		
+
 		refreshButton.onclick = () => fetchServer(serverId);
 		const url = `${API_BASE_URL}/servers/single/${serverId}`;
 		console.info(`Fetching server info`, serverId, url);
-		
+
 		fetch(url, { headers: DEFAULT_HEADERS })
 			.then(handleResponse)
 			.then((json) => {
@@ -74,7 +75,7 @@ const fetchPlayers = (url, playersFetch = false) => {
 		.then((json) => {
 			let players = playersFetch ? json : json.Data.players;
 			players = formatPlayers(players);
-			
+
 			// Only update if players changed
 			if (!arraysEqual(currentPlayers, players)) {
 				currentPlayers = players;
@@ -82,7 +83,7 @@ const fetchPlayers = (url, playersFetch = false) => {
 				updateActivePlayers(players);
 				checkPendingSearch();
 			}
-			
+
 			showLoader(false);
 		})
 		.catch((error) => {
@@ -136,6 +137,9 @@ export const renderPlayers = (players, search = false) => {
 	let index = 1;
 	players.forEach((player) => {
 		const tr = document.createElement('tr');
+		// Ajoute la clé stable comme attribut pour la gestion des favoris
+		const playerKey = getPlayerKey(player);
+		tr.setAttribute('data-player-key', playerKey);
 
 		const no = document.createElement('td');
 		const star = document.createElement('td');
@@ -152,8 +156,14 @@ export const renderPlayers = (players, search = false) => {
 		ping.className = 'table-ping';
 
 		no.textContent = index++ + '.';
-		const isFavorite = isPlayerFavorite(player.id.toString());
-		star.innerHTML = `<img src="${isFavorite ? 'img/star.svg' : 'img/empty-star.svg'}" alt="${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}" title="${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}">`;
+		const isFavorite = isPlayerFavorite(playerKey);
+
+		const starImg = document.createElement('img');
+		starImg.src = isFavorite ? 'img/star.svg' : 'img/empty-star.svg';
+		starImg.alt = isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
+		starImg.title = isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
+		star.appendChild(starImg);
+
 		id.textContent = player.id;
 		name.textContent = player.name;
 		ping.textContent = `${player.ping}ms`;
@@ -162,14 +172,20 @@ export const renderPlayers = (players, search = false) => {
 			const link = document.createElement('a');
 			link.href = STEAM_LINK.replace('%id%', player.socials.steam);
 			link.target = '_blank';
-			link.innerHTML = '<img src="img/steam.svg" alt="Steam">';
+			const steamImg = document.createElement('img');
+			steamImg.src = 'img/steam.svg';
+			steamImg.alt = 'Steam';
+			link.appendChild(steamImg);
 			socials.appendChild(link);
 		}
 		if (player.socials.discord) {
 			const link = document.createElement('a');
 			link.href = DISCORD_LINK.replace('%id%', player.socials.discord);
 			link.target = '_blank';
-			link.innerHTML = '<img src="img/discord.svg" alt="Discord">';
+			const discordImg = document.createElement('img');
+			discordImg.src = 'img/discord.svg';
+			discordImg.alt = 'Discord';
+			link.appendChild(discordImg);
 			socials.appendChild(link);
 		}
 
@@ -182,14 +198,34 @@ export const renderPlayers = (players, search = false) => {
 
 		table.appendChild(tr);
 	});
-	// Footer
-	table.innerHTML += `
-        <tr class="table-footer" style="background: #171717">
-            <td rowspan="5">
-                <span>This page is not affiliated with FiveM or any other server.</span><br />
-                <span>Created by <a href="https://github.com/igorovh" target="_blank">igorovh</a>.</span>
-            </th>
-        </tr>`;
+	const footerTr = document.createElement('tr');
+	footerTr.className = 'table-footer';
+	footerTr.style.background = '#171717';
+
+	const footerTd = document.createElement('td');
+	footerTd.rowSpan = 5;
+
+	const span1 = document.createElement('span');
+	span1.textContent = 'This page is not affiliated with FiveM or any other server.';
+	footerTd.appendChild(span1);
+	footerTd.appendChild(document.createElement('br'));
+
+	const span2 = document.createElement('span');
+	span2.appendChild(document.createTextNode('Created by '));
+
+	const link = document.createElement('a');
+	link.href = 'https://github.com/igorovh';
+	link.target = '_blank';
+	link.rel = 'noopener noreferrer';
+	link.textContent = 'igorovh';
+
+	span2.appendChild(link);
+	span2.appendChild(document.createTextNode('.'));
+
+	footerTd.appendChild(span2);
+	footerTr.appendChild(footerTd);
+	table.appendChild(footerTr);
+
 	if (isSearching() && !search) searchPlayers();
 };
 
@@ -200,11 +236,11 @@ const isValidServerId = (serverId) => {
 const arraysEqual = (a, b) => {
 	if (!a || !b) return false;
 	if (a.length !== b.length) return false;
-	
+
 	// Simple comparison of player IDs and names
-	const aIds = a.map(p => `${p.id}-${p.name}-${p.ping}`).sort();
-	const bIds = b.map(p => `${p.id}-${p.name}-${p.ping}`).sort();
-	
+	const aIds = a.map((p) => `${p.id}-${p.name}-${p.ping}`).sort();
+	const bIds = b.map((p) => `${p.id}-${p.name}-${p.ping}`).sort();
+
 	return JSON.stringify(aIds) === JSON.stringify(bIds);
 };
 
@@ -220,7 +256,7 @@ const showNotification = (message, type) => {
 		window.createNotification({
 			message,
 			type,
-			duration: 3000
+			duration: 3000,
 		});
 	}
 };

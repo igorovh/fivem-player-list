@@ -1,9 +1,24 @@
 import { STORAGE_KEYS } from './utils/constants.js';
 import { fetchServer } from './fetch.js';
 import { showNotification } from './notifications.js';
+import { getSteamId, getDiscordId } from './utils/user.js';
 
 let favorites = [];
-let activePlayerIds = new Set(); 
+let activePlayerKeys = new Set(); 
+
+export const getPlayerKey = (player) => {
+  if (player.socials && player.socials.steam) return `steam:${player.socials.steam}`;
+  if (player.socials && player.socials.discord) return `discord:${player.socials.discord}`;
+  return `name:${player.name}`;
+};
+
+const getPlayerKeyFromRow = (row) => {
+  const key = row.getAttribute('data-player-key');
+  if (key) return key;
+  const playerName = row.querySelector('.table-name').textContent;
+  const playerId = row.querySelector('.table-id').textContent;
+  return `name:${playerName}|id:${playerId}`;
+};
 
 export const initFavorites = () => {
   loadFavorites();
@@ -13,10 +28,9 @@ export const initFavorites = () => {
       const row = e.target.closest('tr');
       if (!row) return;
       
-      const playerId = row.querySelector('.table-id').textContent;
       const playerName = row.querySelector('.table-name').textContent;
-      
-      togglePlayerFavorite(playerId, playerName, e.target);
+      const playerKey = getPlayerKeyFromRow(row);
+      togglePlayerFavorite(playerKey, playerName, e.target);
     }
   });
   
@@ -38,7 +52,6 @@ export const initFavorites = () => {
     }
   }
 
-  // Render favorite players initially
   renderFavoritePlayers();
 };
 
@@ -81,9 +94,9 @@ export const toggleServerFavorite = (serverId, serverName, serverIcon) => {
   renderFavoritesMenu();
 };
 
-export const togglePlayerFavorite = (playerId, playerName, imgElement) => {
+export const togglePlayerFavorite = (playerKey, playerName, imgElement) => {
   const existingIndex = favorites.findIndex(fav => 
-    fav.type === 'player' && fav.id === playerId
+    fav.type === 'player' && fav.key === playerKey
   );
   
   if (existingIndex >= 0) {
@@ -93,7 +106,7 @@ export const togglePlayerFavorite = (playerId, playerName, imgElement) => {
   } else {
     favorites.push({
       type: 'player',
-      id: playerId,
+      key: playerKey,
       name: playerName,
       timestamp: Date.now()
     });
@@ -106,8 +119,8 @@ export const togglePlayerFavorite = (playerId, playerName, imgElement) => {
   renderFavoritePlayers();
 };
 
-export const isPlayerFavorite = (playerId) => {
-  return favorites.some(fav => fav.type === 'player' && fav.id === playerId);
+export const isPlayerFavorite = (playerKey) => {
+  return favorites.some(fav => fav.type === 'player' && fav.key === playerKey);
 };
 
 export const isServerFavorite = (serverId) => {
@@ -115,52 +128,77 @@ export const isServerFavorite = (serverId) => {
 };
 
 export const updateActivePlayers = (players) => {
-  activePlayerIds = new Set(players.map(p => p.id.toString()));
+  activePlayerKeys = new Set(players.map(p => getPlayerKey(p)));
   renderFavoritePlayers();
 };
 
 const renderFavoritesMenu = () => {
   const favoritesMenu = document.querySelector('#favorites-menu');
   if (!favoritesMenu) return;
-  
+
+  while (favoritesMenu.firstChild) {
+    favoritesMenu.removeChild(favoritesMenu.firstChild);
+  }
+
   const serverFavorites = favorites.filter(fav => fav.type === 'server');
   const playerFavorites = favorites.filter(fav => fav.type === 'player');
-  
-  let html = '';
-  
+
   if (serverFavorites.length === 0 && playerFavorites.length === 0) {
-    html = '<div class="no-favorites">No favorites yet</div>';
+    const noFavDiv = document.createElement('div');
+    noFavDiv.className = 'no-favorites';
+    noFavDiv.textContent = 'No favorites yet';
+    favoritesMenu.appendChild(noFavDiv);
   } else {
     if (serverFavorites.length > 0) {
-      html += '<div class="favorites-section"><h3>Favorite Servers</h3><ul>';
+      const section = document.createElement('div');
+      section.className = 'favorites-section';
+      const h3 = document.createElement('h3');
+      h3.textContent = 'Favorite Servers';
+      section.appendChild(h3);
+      const ul = document.createElement('ul');
       serverFavorites.forEach(server => {
-        html += `
-          <li>
-            <button class="favorite-item" data-server-id="${server.id}">
-              <img class="server-icon" src="${server.icon || 'https://fivem.net/favicon.png'}" alt="">
-              <span>${server.name}</span>
-            </button>
-          </li>
-        `;
+        const li = document.createElement('li');
+        const button = document.createElement('button');
+        button.className = 'favorite-item';
+        button.setAttribute('data-server-id', server.id);
+
+        const img = document.createElement('img');
+        img.className = 'server-icon';
+        img.src = server.icon || 'https://fivem.net/favicon.png';
+        img.alt = '';
+
+        const span = document.createElement('span');
+        span.textContent = server.name;
+
+        button.appendChild(img);
+        button.appendChild(span);
+        li.appendChild(button);
+        ul.appendChild(li);
       });
-      html += '</ul></div>';
+      section.appendChild(ul);
+      favoritesMenu.appendChild(section);
     }
-    
+
     if (playerFavorites.length > 0) {
-      html += '<div class="favorites-section"><h3>Favorite Players</h3><ul>';
+      const section = document.createElement('div');
+      section.className = 'favorites-section';
+      const h3 = document.createElement('h3');
+      h3.textContent = 'Favorite Players';
+      section.appendChild(h3);
+      const ul = document.createElement('ul');
       playerFavorites.forEach(player => {
-        html += `
-          <li>
-            <span class="favorite-player">${player.name} (ID: ${player.id})</span>
-          </li>
-        `;
+        const li = document.createElement('li');
+        const span = document.createElement('span');
+        span.className = 'favorite-player';
+        span.textContent = `${player.name} (${player.key})`;
+        li.appendChild(span);
+        ul.appendChild(li);
       });
-      html += '</ul></div>';
+      section.appendChild(ul);
+      favoritesMenu.appendChild(section);
     }
   }
-  
-  favoritesMenu.innerHTML = html;
-  
+
   favoritesMenu.querySelectorAll('.favorite-item').forEach(button => {
     button.addEventListener('click', () => {
       const serverId = button.getAttribute('data-server-id');
@@ -187,21 +225,28 @@ export const renderFavoritePlayers = () => {
   });
 
   const playerFavorites = favorites.filter(fav => fav.type === 'player');
-  
+
   if (playerFavorites.length === 0) {
     if (footerRow) {
-      footerRow.querySelector('td').innerHTML = '<span>No favorite players yet. Click on the star icon next to a player to add them to favorites.</span>';
+      const td = footerRow.querySelector('td');
+      if (td) {
+        while (td.firstChild) td.removeChild(td.firstChild);
+        const span = document.createElement('span');
+        span.textContent = 'No favorite players yet. Click on the star icon next to a player to add them to favorites.';
+        td.appendChild(span);
+      }
     }
     return;
   }
 
   let index = 1;
   playerFavorites.forEach(player => {
-    const isOnline = activePlayerIds.has(player.id);
+    const isOnline = activePlayerKeys.has(player.key);
     const tr = document.createElement('tr');
     if (!isOnline) {
       tr.classList.add('player-offline');
     }
+    tr.setAttribute('data-player-key', player.key);
 
     const no = document.createElement('td');
     const star = document.createElement('td');
@@ -218,8 +263,12 @@ export const renderFavoritePlayers = () => {
     ping.className = 'table-ping';
 
     no.textContent = index++ + '.';
-    star.innerHTML = `<img src="img/star.svg" alt="Remove from Favorites" title="Remove from Favorites">`;
-    id.textContent = player.id;
+    const starImg = document.createElement('img');
+    starImg.src = 'img/star.svg';
+    starImg.alt = 'Remove from Favorites';
+    starImg.title = 'Remove from Favorites';
+    star.appendChild(starImg);
+    id.textContent = player.key;
     name.textContent = player.name;
     ping.textContent = isOnline ? 'Online' : 'Offline';
 
@@ -230,8 +279,9 @@ export const renderFavoritePlayers = () => {
     tr.appendChild(socials);
     tr.appendChild(ping);
 
-    tr.querySelector('.table-favorite img').addEventListener('click', function() {
-      togglePlayerFavorite(player.id, player.name, this);
+    starImg.addEventListener('click', function(e) {
+      e.stopPropagation();
+      togglePlayerFavorite(player.key, player.name, this);
       renderFavoritePlayers();
     });
 
@@ -243,6 +293,12 @@ export const renderFavoritePlayers = () => {
   });
 
   if (footerRow) {
-    footerRow.querySelector('td').innerHTML = `<span>Showing ${playerFavorites.length} favorite player${playerFavorites.length !== 1 ? 's' : ''}.</span>`;
+    const td = footerRow.querySelector('td');
+    if (td) {
+      while (td.firstChild) td.removeChild(td.firstChild);
+      const span = document.createElement('span');
+      span.textContent = `Showing ${playerFavorites.length} favorite player${playerFavorites.length !== 1 ? 's' : ''}.`;
+      td.appendChild(span);
+    }
   }
 };

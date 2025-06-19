@@ -23,25 +23,31 @@ export const showNotification = (message, type = 'info', duration = 5000) => {
   const notification = document.createElement('div');
   notification.className = `notification ${notificationType}`;
   notification.id = id;
-  
-  notification.innerHTML = `
-    <div class="notification-content">${messageContent}</div>
-    <button class="close-notification" aria-label="Close">&times;</button>
-  `;
-  
+
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'notification-content';
+  contentDiv.textContent = messageContent;
+
+  const closeButton = document.createElement('button');
+  closeButton.className = 'close-notification';
+  closeButton.setAttribute('aria-label', 'Close');
+  closeButton.textContent = '×';
+
+  notification.appendChild(contentDiv);
+  notification.appendChild(closeButton);
+
   notificationContainer.appendChild(notification);
-  
-  const closeButton = notification.querySelector('.close-notification');
+
   closeButton.addEventListener('click', () => {
     removeNotification(id);
   });
-  
+
   if (notificationDuration > 0) {
     setTimeout(() => {
       removeNotification(id);
     }, notificationDuration);
   }
-  
+
   return id;
 };
 

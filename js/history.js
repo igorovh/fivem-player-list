@@ -64,31 +64,53 @@ const saveHistory = () => {
 const renderHistoryMenu = () => {
   const historyMenu = document.querySelector('#history-menu');
   if (!historyMenu) return;
-  
+
+  while (historyMenu.firstChild) {
+    historyMenu.removeChild(historyMenu.firstChild);
+  }
+
   if (serverHistory.length === 0) {
-    historyMenu.innerHTML = '<div class="no-favorites">No history yet</div>';
+    const noFavDiv = document.createElement('div');
+    noFavDiv.className = 'no-favorites';
+    noFavDiv.textContent = 'No history yet';
+    historyMenu.appendChild(noFavDiv);
     return;
   }
-  
-  let html = '<div class="favorites-section"><h3>Recent Servers</h3><ul>';
-  
+
+  const section = document.createElement('div');
+  section.className = 'favorites-section';
+  const h3 = document.createElement('h3');
+  h3.textContent = 'Recent Servers';
+  section.appendChild(h3);
+  const ul = document.createElement('ul');
+
   serverHistory.forEach(server => {
+    const li = document.createElement('li');
+    const button = document.createElement('button');
+    button.className = 'favorite-item';
+    button.setAttribute('data-server-id', server.id);
+
     const date = new Date(server.timestamp);
     const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-    
-    html += `
-      <li>
-        <button class="favorite-item" data-server-id="${server.id}" title="Last visited: ${formattedDate}">
-          <img class="server-icon" src="${server.icon}" alt="">
-          <span>${server.name}</span>
-        </button>
-      </li>
-    `;
+    button.title = `Last visited: ${formattedDate}`;
+
+    const img = document.createElement('img');
+    img.className = 'server-icon';
+    img.src = server.icon;
+    img.alt = '';
+
+    const span = document.createElement('span');
+    span.textContent = server.name;
+
+    button.appendChild(img);
+    button.appendChild(span);
+    li.appendChild(button);
+    ul.appendChild(li);
   });
-  
-  html += '</ul></div>';
-  historyMenu.innerHTML = html;
-  
+
+  section.appendChild(ul);
+  historyMenu.appendChild(section);
+
   historyMenu.querySelectorAll('.favorite-item').forEach(button => {
     button.addEventListener('click', () => {
       const serverId = button.getAttribute('data-server-id');

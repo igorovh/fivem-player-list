@@ -36,7 +36,12 @@ const applyTheme = (theme) => {
 const updateToggleButton = (theme) => {
   const toggleButton = document.querySelector('#theme-toggle');
   if (!toggleButton) return;
-  
+
+  // Remove all children
+  while (toggleButton.firstChild) {
+    toggleButton.removeChild(toggleButton.firstChild);
+  }
+
   const iconPath = theme === THEMES.LIGHT 
     ? 'img/moon.svg'
     : 'img/sun.svg';
@@ -44,6 +49,11 @@ const updateToggleButton = (theme) => {
   const altText = theme === THEMES.LIGHT
     ? 'Switch to dark mode'
     : 'Switch to light mode';
-    
-  toggleButton.innerHTML = `<img src="${iconPath}" alt="${altText}" title="${altText}">`;
+
+  const img = document.createElement('img');
+  img.src = iconPath;
+  img.alt = altText;
+  img.title = altText;
+
+  toggleButton.appendChild(img);
 };
