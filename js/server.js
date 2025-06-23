@@ -14,7 +14,7 @@ export const setServerInfo = (serverId, data) => {
 	favicon.href = icon;
 	setTitle(title);
 	serverIcon.src = icon;
-	serverPlayers.textContent = `[${data.clients}/${data.svMaxclients ?? data.sv_maxclients ?? 0}]`;
+	serverPlayers.textContent = `${data.clients}/${data.svMaxclients ?? data.sv_maxclients ?? 0}`;
 };
 
 export const setTitle = (title) => {
