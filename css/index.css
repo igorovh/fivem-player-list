@@ -28,6 +28,10 @@
     --border-color: #dddddd;
 }
 
+.light-theme .icon img {
+    filter: invert(0.8);
+}
+
 body {
     margin: 0 !important;
     padding: 0 !important;

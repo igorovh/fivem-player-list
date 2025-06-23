@@ -200,7 +200,6 @@ export const renderPlayers = (players, search = false) => {
 	});
 	const footerTr = document.createElement('tr');
 	footerTr.className = 'table-footer';
-	footerTr.style.background = '#171717';
 
 	const footerTd = document.createElement('td');
 	footerTd.rowSpan = 5;
