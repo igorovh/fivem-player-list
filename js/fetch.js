@@ -40,9 +40,19 @@ async function retryFetch(url, options = {}) {
 					return response;
 				}
 
+				if (response.status === 404) {
+					const error = new Error(`Server not found (404)`);
+					error.nonRetryable = true;
+					throw error;
+				}
+
 				throw new Error(`Retryable status: ${response.status}`);
 			} catch (err) {
 				clearTimeout(timer);
+
+				if (err.nonRetryable) {
+					throw err;
+				}
 
 				const isLastAttemptForProxy = attempt === retriesPerProxy;
 				const isLastProxy = i === targets.length - 1;
@@ -95,7 +105,11 @@ export const fetchServer = (serverId) => {
 			.catch((error) => {
 				console.error(error);
 				setTitle('Error loading server data');
-				showNotification('Failed to load server data', 'error');
+				if (error.message && (error.message.includes('404') || error.message.toLowerCase().includes('not found'))) {
+					showNotification('Server not found. Please enter a valid server ID.', 'error');
+				} else {
+					showNotification('Failed to load server data', 'error');
+				}
 				showLoader(false);
 			});
 	} catch (error) {
@@ -265,8 +279,27 @@ export const renderPlayers = (players, search = false) => {
 	if (isSearching() && !search) searchPlayers();
 };
 
-const isValidServerId = (serverId) => {
-	return typeof serverId === 'string' && /^[a-zA-Z0-9]+$/.test(serverId);
+export const extractServerId = (input) => {
+	if (!input) return '';
+
+	let cleanInput = input.trim();
+
+	// If it contains slashes, get the last path segment
+	if (cleanInput.includes('/')) {
+		// Remove trailing slashes
+		cleanInput = cleanInput.replace(/\/+$/, '');
+		const parts = cleanInput.split('/');
+		cleanInput = parts[parts.length - 1];
+	}
+
+	// Strip query parameters or hashes
+	cleanInput = cleanInput.split(/[?#]/)[0];
+
+	return cleanInput.trim();
+};
+
+export const isValidServerId = (serverId) => {
+	return typeof serverId === 'string' && /^[a-zA-Z0-9]{6,8}$/.test(serverId);
 };
 
 const arraysEqual = (a, b) => {

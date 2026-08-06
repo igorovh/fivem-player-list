@@ -1,4 +1,4 @@
-import { fetchServer } from './fetch.js';
+import { fetchServer, isValidServerId, extractServerId } from './fetch.js';
 import { initializeSearch } from './search.js';
 import { initTheme } from './theme.js';
 import { initFavorites } from './favorites.js';
@@ -30,9 +30,14 @@ window.addEventListener('DOMContentLoaded', () => {
 	const serverIdSearch = document.querySelector('#server-id');
 	serverIdSearch.addEventListener('keyup', (event) => {
 		if (event.key === 'Enter' || event.keyCode === 13) {
-			const value = serverIdSearch.value.trim();
-			if (value.length < 1) {
+			const rawValue = serverIdSearch.value.trim();
+			if (rawValue.length < 1) {
 				showNotification('Please enter a server ID', 'warning');
+				return;
+			}
+			const value = extractServerId(rawValue);
+			if (!isValidServerId(value)) {
+				showNotification('Please enter a valid server ID', 'error');
 				return;
 			}
 			fetchServer(value);
@@ -42,9 +47,14 @@ window.addEventListener('DOMContentLoaded', () => {
 	});
 	
 	document.querySelector('#server-id-button').onclick = () => {
-		const value = serverIdSearch.value.trim();
-		if (value.length < 1) {
+		const rawValue = serverIdSearch.value.trim();
+		if (rawValue.length < 1) {
 			showNotification('Please enter a server ID', 'warning');
+			return;
+		}
+		const value = extractServerId(rawValue);
+		if (!isValidServerId(value)) {
+			showNotification('Please enter a valid server ID', 'error');
 			return;
 		}
 		fetchServer(value);
@@ -54,22 +64,29 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	const url = new URL(window.location.href);
 	if (url.searchParams.has('serverId')) {
-		const serverId = url.searchParams.get('serverId');
-		if (serverId && /^[a-zA-Z0-9]+$/.test(serverId)) {
+		const rawServerId = url.searchParams.get('serverId');
+		const serverId = extractServerId(rawServerId);
+		if (serverId && isValidServerId(serverId)) {
 			fetchServer(serverId);
 			setId(serverId);
 			console.info('Fetching by URL.');
 			return;
 		} else {
-			showNotification('Invalid server ID in URL', 'error');
+			showNotification('Please enter a valid server ID', 'error');
 		}
 	}
 
 	const storageServerId = localStorage.getItem(STORAGE_KEYS.SERVER_ID);
 	if (storageServerId) {
-		fetchServer(storageServerId);
-		setId(storageServerId);
-		console.info('Fetching by localStorage.');
+		const serverId = extractServerId(storageServerId);
+		if (isValidServerId(serverId)) {
+			fetchServer(serverId);
+			setId(serverId);
+			console.info('Fetching by localStorage.');
+		} else {
+			localStorage.removeItem(STORAGE_KEYS.SERVER_ID);
+			showNotification('Enter a server ID to get started', 'info', 8000);
+		}
 	} else {
 		// First time user hint
 		showNotification('Enter a server ID to get started', 'info', 8000);
