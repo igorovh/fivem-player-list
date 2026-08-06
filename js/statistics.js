@@ -73,8 +73,8 @@ const updatePlayerDistributionChart = (players) => {
         datasets: [{
           label: 'Player Distribution by ID Range',
           data,
-          backgroundColor: 'rgba(6, 189, 0, 0.6)',
-          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: 'rgba(0, 255, 136, 0.6)',
+          borderColor: 'rgba(0, 255, 136, 1)',
           borderWidth: 1
         }]
       },
