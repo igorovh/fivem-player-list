@@ -17,7 +17,7 @@ https://frontend.cfx-services.net/api/servers/single/serverId
 ### Server Browser
 
 Visit the [FiveM Server Browser](https://servers.fivem.net/) and click on your chosen server.  
-Then look at the URL and copy the last fragment, which is the **Server ID**. Example:  
+Then look at the URL and copy the last fragment, which is the **Server ID**. Example: 
 `https://servers.fivem.net/servers/detail/vp4rxq` -\> **vp4rxq** 
 
 ### Client
